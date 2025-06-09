@@ -67,7 +67,7 @@ def show_calendar_tab_view(page, selected_name, load_calendars, save_calendars, 
             show_calendar_tab_view(page, name, load_calendars, save_calendars, username, year, int(e.control.value))
 
         year_dropdown = ft.Dropdown(
-            width=100,
+            width=150,
             value=str(year),
             options=[ft.dropdown.Option(str(y)) for y in range(today.year - 5, today.year + 6)],
             on_change=on_year_change
