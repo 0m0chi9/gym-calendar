@@ -38,13 +38,22 @@ def show_calendar_tab_view(page, selected_name, load_calendars, save_calendars, 
 
         for day in range(1, last_day + 1):
             date_str = f"{year}-{month:02}-{day:02}"
-            label = "✅" if date_str in data.get(name, []) else str(day)
+            checked = date_str in data.get(name, [])
+            label = ft.Column(
+                controls=[
+                    ft.Text(str(day), size=12, color="black"),
+                    ft.Text("✅" if checked else "", size=12)
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                spacing=2
+            )
 
             def make_on_click(d):
                 return lambda e: (save_checked(name, d), show_calendar_tab_view(page, name, load_calendars, save_calendars, username, year, month))
 
             row.append(ft.Container(
-                content=ft.Text(label, color="black"),
+                content=label,
                 width=40,
                 height=40,
                 alignment=ft.alignment.center,
