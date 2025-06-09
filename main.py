@@ -80,8 +80,8 @@ def show_calendar_tab_view(page, selected_name, load_calendars, save_calendars, 
             on_change=on_month_change
         )
 
-        delete_button = ft.ElevatedButton("削除", on_click=lambda e: (data.pop(name, None), save_calendars(data), show_calendar_tab_view(page, list(data.keys())[0] if data else None, load_calendars, save_calendars, username)))
-
+        delete_button = ft.ElevatedButton("削除", on_click=lambda e: show_delete_confirmation(page, name, load_calendars, save_calendars, username))
+        
         return ft.Column([
             ft.Row([year_dropdown, month_dropdown, delete_button], spacing=10),
             ft.Text(f"{year}年{month}月 {name} 記録", size=20),
@@ -112,6 +112,39 @@ def show_calendar_tab_view(page, selected_name, load_calendars, save_calendars, 
 
     page.views.clear()
     page.views.append(ft.View("/calendar", controls=controls))
+    page.update()
+    
+    
+# ================= 削除確認画面 =================
+def show_delete_confirmation(page, name, load_calendars, save_calendars, username):
+    def confirm_delete(e):
+        data = load_calendars()
+        data.pop(name, None)
+        save_calendars(data)
+        # カレンダー一覧が空でなければ最初のカレンダーを表示，なければ初期作成
+        if data:
+            first = list(data.keys())[0]
+            show_calendar_tab_view(page, first, load_calendars, save_calendars, username)
+        else:
+            data["Training"] = []
+            save_calendars(data)
+            show_calendar_tab_view(page, "Training", load_calendars, save_calendars, username)
+
+    def cancel_delete(e):
+        show_calendar_tab_view(page, name, load_calendars, save_calendars, username)
+
+    page.views.append(
+        ft.View(
+            "/confirm_delete",
+            controls=[
+                ft.Text(f"「{name}」カレンダーを本当に削除しますか？", size=20),
+                ft.Row([
+                    ft.ElevatedButton("はい（削除）", on_click=confirm_delete),
+                    ft.ElevatedButton("いいえ（戻る）", on_click=cancel_delete),
+                ], spacing=10)
+            ]
+        )
+    )
     page.update()
 
 # ================= メイン関数 =================
