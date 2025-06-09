@@ -17,10 +17,15 @@ def save_calendars(data):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-# ================ カレンダー追加 =====================
+# ================ カレンダー追加・削除 =====================
 def add_calendar(name, data):
     if name not in data:
         data[name] = []
+        save_calendars(data)
+
+def delete_calendar(name, data):
+    if name in data:
+        del data[name]
         save_calendars(data)
 
 # =============== カレンダー表示ビュー ===================
@@ -65,7 +70,7 @@ def show_calendar_tab_view(page, selected_name, selected_year=None, selected_mon
                 return lambda e: (save_checked(name, d), show_calendar_tab_view(page, name, year, month))
 
             btn = ft.Container(
-                content=ft.Text(label),
+                content=ft.Text(label, color="black"),
                 width=40,
                 height=40,
                 alignment=ft.alignment.center,
@@ -103,8 +108,10 @@ def show_calendar_tab_view(page, selected_name, selected_year=None, selected_mon
             on_change=on_month_change
         )
 
+        delete_button = ft.ElevatedButton("削除", on_click=lambda e: (delete_calendar(name, data), show_calendar_tab_view(page, list(data.keys())[0] if data else None)))
+
         return ft.Column([
-            ft.Row([year_dropdown, month_dropdown]),
+            ft.Row([year_dropdown, month_dropdown, delete_button], wrap=True, spacing=10),
             ft.Text(f"{year}年{month}月 {name} 記録", size=20),
             *rows
         ])
@@ -125,20 +132,18 @@ def show_calendar_tab_view(page, selected_name, selected_year=None, selected_mon
     name_input = ft.TextField(label="新しいカレンダー名を追加", width=200)
 
     page.views.clear()
-    page.views.append(
-        ft.View(
-            "/tabs",
-            controls=[
-                ft.Text("カテゴリ別 習慣記録カレンダー", size=20),
-                ft.Row([
-                    name_input,
-                    ft.ElevatedButton("追加", on_click=lambda e: on_add_calendar(name_input.value))
-                ], spacing=10),
-                ft.Tabs(tabs=calendar_tabs, selected_index=list(data.keys()).index(selected_name), on_change=on_tab_change),
-                calendar_component(selected_name)
-            ]
-        )
-    )
+    controls = [
+        ft.Text("カテゴリ別 習慣記録カレンダー", size=20),
+        ft.Row([
+            name_input,
+            ft.ElevatedButton("追加", on_click=lambda e: on_add_calendar(name_input.value))
+        ], spacing=10),
+    ]
+    if selected_name:
+        controls.append(ft.Tabs(tabs=calendar_tabs, selected_index=list(data.keys()).index(selected_name), on_change=on_tab_change))
+        controls.append(calendar_component(selected_name))
+
+    page.views.append(ft.View("/tabs", controls=controls))
     page.update()
 
 # ==================== メイン ========================
